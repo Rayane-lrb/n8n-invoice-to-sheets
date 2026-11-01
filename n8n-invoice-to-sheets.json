@@ -1,0 +1,301 @@
+{
+  "name": "n8n-invoice-to-sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false,
+          "q": "has:attachment filename:pdf"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0e1ce6b8-7d70-4f3e-8578-0d9c7c4213fc",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "HX1qq9EZNE3NfpFk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0a9172e7-d02e-4752-b100-30953e98735d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "text": "=extract the needed informations out of this text.\nThe AI must not make anything up and must leave a field empty if it is not in the text.\n{{ $('Gmail Trigger').item.json.subject }}\n{{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Date",
+              "type": "date",
+              "description": "\tInvoice date in DD-MM-YYY format"
+            },
+            {
+              "name": "supplier",
+              "description": "Name of the company that issued the invoice"
+            },
+            {
+              "name": "invoice_number",
+              "type": "number",
+              "description": "Invoice number"
+            },
+            {
+              "name": "total_amount",
+              "type": "number",
+              "description": "Total amount including VAT"
+            },
+            {
+              "name": "currency",
+              "description": "Currency, e.g. EUR, Dollar, ..."
+            },
+            {
+              "name": "vat_amount",
+              "type": "number",
+              "description": "VAT amount"
+            },
+            {
+              "name": "invoice-number",
+              "type": "number",
+              "description": "The unique invoice number or reference, often labeled “Factuurnummer”, “Invoice No.”, “Facture n°” or “Reference”. Leave empty if not found."
+            },
+            {
+              "name": "subject",
+              "description": "=The mails subject (whats the invoice about)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "ba559b7d-3ddd-481a-b853-6e6648980836",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        208
+      ],
+      "id": "1fa300b1-d90d-45ba-bb3d-7cc7ff444659",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3sMdx9tF4J2kSMYK",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10Sf-sn6dauny3pTNJUdm9vvVnHU_Z6UO4t-3eNOD3AA",
+          "mode": "list",
+          "cachedResultName": "n8n-invoice-to-sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10Sf-sn6dauny3pTNJUdm9vvVnHU_Z6UO4t-3eNOD3AA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10Sf-sn6dauny3pTNJUdm9vvVnHU_Z6UO4t-3eNOD3AA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Datum": "={{ $json.output.Date }}",
+            "Leverancier": "={{ $json.output.supplier }}",
+            "Factuurnummer": "={{ $json.output.invoice-number }}",
+            "Bedrag": "={{ $json.output.total_amount }}",
+            "Valuta": "={{ $json.output.currency }}",
+            "BTW": "={{ $json.output.vat_amount }}",
+            "Onderwerp mail": "={{ $json.output.subject }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Datum",
+              "displayName": "Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Leverancier",
+              "displayName": "Leverancier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Factuurnummer",
+              "displayName": "Factuurnummer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bedrag",
+              "displayName": "Bedrag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Valuta",
+              "displayName": "Valuta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BTW",
+              "displayName": "BTW",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Onderwerp mail",
+              "displayName": "Onderwerp mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "8c40620d-5b5f-46d9-92b6-c2960f8b230b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hACqRnQvRpRY6qaP",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "69fa3be0-240e-4a0c-bf82-8c3af18febe1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34615db5291a4e691021af4aa0a5a84902e1ef3f8ba3a03f7966fe92dff18943"
+  },
+  "nodeGroups": [],
+  "id": "wIQ1EZtBUxr95Rjz",
+  "tags": []
+}
